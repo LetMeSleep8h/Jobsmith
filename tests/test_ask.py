@@ -33,6 +33,23 @@ def test_time_windows():
     assert ask.window("whatever", now) == (None, None, "")
 
 
+def test_havent_replied_lists_the_quiet_companies():
+    """'which companies haven't replied' asks for the gone-quiet list, not every reply."""
+    db.conn()
+    now = db.now()
+    _job("q", "QuietCorp", "submitted")
+    _sent("q", 20 * 24)                                # sent 20 days ago, nothing since: gone quiet
+    _job("l", "LoudCorp", "submitted")
+    _sent("l", 1)
+    out = list(ask.answer("which companies haven't replied in the past two weeks?"))
+    texts = [b["text"] for b in out]
+    assert any("Gone quiet" in t for t in texts)
+    assert any(t == "QuietCorp" for t in texts)
+    assert not any(t == "LoudCorp" for t in texts)
+    # the wording no longer falls into the plain 'replies' topic
+    assert not any(b["t"] == "head" and "Replies" in b["text"] for b in out)
+
+
 def test_the_two_part_question():
     db.conn()
     _job("a", "Acme Robotics", "submitted")

@@ -96,7 +96,8 @@ TOPICS: list[tuple[str, str]] = [
                 r"\bneeds? (me|my|you)\b|waiting on me|attention|\bheld\b|on hold|\bpending\b|to[- ]?do"),
     ("codes", r"\bcodes?\b|verification|captcha|sign[- ]?ins?\b|log ?in"),
     ("answers", r"what did (you|it) (write|answer|say|put)|\banswers? (for|to|at|on)\b|cover letter|what('?s| is) in (my|the) application"),
-    ("followups", r"follow[- ]?ups?|gone quiet|\bquiet\b|ghost|haven'?t heard|not heard|no (reply|response)"),
+    ("followups", r"follow[- ]?ups?|gone quiet|\bquiet\b|ghost|haven'?t heard|not heard|no (reply|response)|"
+                 r"haven'?t (repl(y|ied)|responded)|never (replied|responded)|not (replied|responded)|without (a|any) (reply|response)"),
     ("replies", r"repl(y|ies|ied)|heard back|respon(se|ses|ded)|\bemails?\b|inbox|got back|news"),
     ("interviews", r"interview|assessment|\boa\b|online assessment|coding (test|challenge)|hackerrank|codesignal"),
     ("rejected", r"reject|declin|turned (me )?down|didn'?t (get|make)|\bno'?s\b"),
@@ -128,6 +129,8 @@ def topics(clause: str) -> list[str]:
         found.remove("running")                           # "applications in progress" is about applications
     if "stats" in found and len(found) > 1 and not re.search(r"how many|\bcount\b|\btotal\b", c):
         found.remove("stats")
+    if "followups" in found and "replies" in found and re.search(r"haven'?t|\bnot\b|\bnever\b|without", c):
+        found.remove("replies")                           # "which companies haven't replied" asks for the gone-quiet list
     if "applied" in found and "stats" in found:
         found.remove("applied")                           # "how many applications" is a count
     if "replies" in found and any(x in found for x in ("interviews", "rejected", "offers", "codes")):
